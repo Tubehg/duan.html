@@ -8,6 +8,7 @@
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
+            line-height: 1.6;
         }
         .hospital {
             text-align: center;
@@ -26,6 +27,7 @@
             font-size: 18px;
             font-weight: bold;
             margin-bottom: 5px;
+            text-transform: uppercase;
         }
         .year {
             text-align: center;
@@ -36,6 +38,9 @@
             text-align: center;
             margin-bottom: 15px;
         }
+        .monitoring-info span {
+            margin: 0 10px;
+        }
         .room {
             text-align: center;
             font-weight: bold;
@@ -45,6 +50,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 15px;
+            font-size: 14px;
         }
         th, td {
             border: 1px solid black;
@@ -62,13 +68,45 @@
             display: flex;
             justify-content: space-between;
             font-size: 14px;
+            margin-top: 20px;
         }
         .editable {
             background-color: #ffffcc;
+            padding: 2px 5px;
+            border-radius: 3px;
+        }
+        .parameter-form {
+            background-color: #f5f5f5;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+        .parameter-form input {
+            padding: 5px;
+            margin-right: 10px;
+            border: 1px solid #ddd;
+        }
+        .parameter-form button {
+            padding: 5px 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
+    <div class="parameter-form">
+        <h3>Tùy chỉnh thông số:</h3>
+        <input type="text" id="inputPhong" placeholder="Số phòng" value="418">
+        <input type="text" id="inputNam" placeholder="Năm" value="2024">
+        <input type="text" id="inputNhietDo" placeholder="Nhiệt độ (21°C-26°C)" value="21°C - 26°C">
+        <input type="text" id="inputDoAm" placeholder="Độ ẩm (40%-70%)" value="40% - 70%">
+        <button onclick="updateParameters()">Tạo URL</button>
+        <div id="generatedUrl" style="margin-top: 10px; word-break: break-all;"></div>
+    </div>
+
     <div class="hospital" id="hospital">BỆNH VIỆN ĐA KHOA TỈNH HÀ GIANG</div>
     <div class="department" id="department">KHOA VI SINH - SHPT</div>
     
@@ -154,33 +192,81 @@
     </div>
 
     <script>
-        // Function to get URL parameters
-        function getUrlParameter(name) {
-            name = name.replace(/[\[\]]/g, '\\$&');
-            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
-                results = regex.exec(window.location.href);
-            if (!results) return null;
-            if (!results[2]) return '';
-            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        // Hàm giải mã URL an toàn
+        function decodeURIComponentSafe(value) {
+            if (!value) return value;
+            try {
+                while (value !== decodeURIComponent(value)) {
+                    value = decodeURIComponent(value);
+                }
+                return value;
+            } catch (e) {
+                return value;
+            }
         }
 
-        // Update editable fields from URL parameters
-        document.addEventListener('DOMContentLoaded', function() {
-            // Get parameters from URL
-            var phong = getUrlParameter('phong');
-            var nam = getUrlParameter('nam');
-            var nhietDo = getUrlParameter('nhietDo');
-            var doAm = getUrlParameter('doAm');
-            var benhVien = getUrlParameter('benhVien');
-            var khoa = getUrlParameter('khoa');
+        // Cập nhật thông số từ URL
+        function updateFromURL() {
+            const params = new URLSearchParams(window.location.search);
+            
+            if (params.has('phong')) {
+                document.getElementById('roomNumber').textContent = decodeURIComponentSafe(params.get('phong'));
+                document.getElementById('inputPhong').value = decodeURIComponentSafe(params.get('phong'));
+            }
+            if (params.has('nam')) {
+                document.getElementById('year').textContent = 'Năm: ' + decodeURIComponentSafe(params.get('nam'));
+                document.getElementById('inputNam').value = decodeURIComponentSafe(params.get('nam'));
+            }
+            if (params.has('nhietDo')) {
+                document.getElementById('tempRange').textContent = decodeURIComponentSafe(params.get('nhietDo'));
+                document.getElementById('inputNhietDo').value = decodeURIComponentSafe(params.get('nhietDo'));
+            }
+            if (params.has('doAm')) {
+                document.getElementById('humidityRange').textContent = decodeURIComponentSafe(params.get('doAm'));
+                document.getElementById('inputDoAm').value = decodeURIComponentSafe(params.get('doAm'));
+            }
+            if (params.has('benhVien')) {
+                document.getElementById('hospital').textContent = decodeURIComponentSafe(params.get('benhVien'));
+            }
+            if (params.has('khoa')) {
+                document.getElementById('department').textContent = decodeURIComponentSafe(params.get('khoa'));
+            }
+        }
 
-            // Update fields if parameters exist
-            if (phong) document.getElementById('roomNumber').textContent = phong;
-            if (nam) document.getElementById('year').textContent = 'Năm: ' + nam;
-            if (nhietDo) document.getElementById('tempRange').textContent = nhietDo;
-            if (doAm) document.getElementById('humidityRange').textContent = doAm;
-            if (benhVien) document.getElementById('hospital').textContent = benhVien;
-            if (khoa) document.getElementById('department').textContent = khoa;
+        // Tạo URL với các thông số
+        function updateParameters() {
+            const phong = encodeURIComponent(document.getElementById('inputPhong').value);
+            const nam = encodeURIComponent(document.getElementById('inputNam').value);
+            const nhietDo = encodeURIComponent(document.getElementById('inputNhietDo').value);
+            const doAm = encodeURIComponent(document.getElementById('inputDoAm').value);
+            const benhVien = encodeURIComponent(document.getElementById('hospital').textContent);
+            const khoa = encodeURIComponent(document.getElementById('department').textContent);
+            
+            const newUrl = `${window.location.pathname}?phong=${phong}&nam=${nam}&nhietDo=${nhietDo}&doAm=${doAm}&benhVien=${benhVien}&khoa=${khoa}`;
+            
+            document.getElementById('generatedUrl').innerHTML = `
+                <strong>URL đã tạo:</strong><br>
+                <a href="${newUrl}" target="_blank">${window.location.origin}${newUrl}</a>
+                <button onclick="copyToClipboard('${window.location.origin}${newUrl}')" style="margin-left: 10px;">Sao chép</button>
+            `;
+            
+            // Cập nhật ngay lên trang mà không cần tải lại
+            document.getElementById('roomNumber').textContent = document.getElementById('inputPhong').value;
+            document.getElementById('year').textContent = 'Năm: ' + document.getElementById('inputNam').value;
+            document.getElementById('tempRange').textContent = document.getElementById('inputNhietDo').value;
+            document.getElementById('humidityRange').textContent = document.getElementById('inputDoAm').value;
+        }
+
+        // Sao chép vào clipboard
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                alert('Đã sao chép URL vào clipboard!');
+            });
+        }
+
+        // Khởi tạo trang
+        document.addEventListener('DOMContentLoaded', function() {
+            updateFromURL();
         });
     </script>
 </body>
