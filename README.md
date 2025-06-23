@@ -6,6 +6,7 @@
     <title>Biểu mẫu theo dõi nhiệt độ - độ ẩm</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Toàn bộ CSS giữ nguyên như code trước */
         * {
             margin: 0;
             padding: 0;
