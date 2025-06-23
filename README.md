@@ -232,35 +232,6 @@
             box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.2);
         }
         
-        .url-container {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #e3f2fd;
-            border-radius: 8px;
-            font-size: 14px;
-        }
-        
-        .url-container a {
-            color: #0d47a1;
-            font-weight: 600;
-            word-break: break-all;
-        }
-        
-        .url-container button {
-            margin-top: 10px;
-            padding: 8px 15px;
-            background-color: #0d47a1;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        .url-container button:hover {
-            background-color: #0b3d91;
-        }
-        
         .month-selector {
             display: flex;
             justify-content: center;
@@ -275,6 +246,30 @@
             border-radius: 5px;
             border: 1px solid #90caf9;
             background-color: white;
+        }
+        
+        .room-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 0;
+            background-color: #f1f8ff;
+            flex-wrap: wrap;
+        }
+        
+        .room-selector label {
+            font-weight: 600;
+            color: #0d47a1;
+        }
+        
+        .room-selector select {
+            padding: 10px 15px;
+            border-radius: 8px;
+            border: 1px solid #90caf9;
+            background-color: white;
+            font-size: 16px;
+            min-width: 200px;
         }
         
         .loading {
@@ -306,6 +301,65 @@
             text-align: center;
         }
 
+        .status-indicator {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .status-success {
+            background-color: #c8e6c9;
+            color: #2e7d32;
+        }
+
+        .status-error {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+        
+        .session-selector {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 0;
+            background-color: #f1f8ff;
+            flex-wrap: wrap;
+        }
+        
+        .session-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .session-btn {
+            padding: 10px 20px;
+            border: 2px solid #90caf9;
+            border-radius: 8px;
+            background-color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .session-btn.active {
+            background: linear-gradient(to right, #1976d2, #0d47a1);
+            color: white;
+            border-color: #0d47a1;
+        }
+        
+        .session-btn:hover {
+            background-color: #e3f2fd;
+        }
+        
+        td.out-of-range {
+            background-color: #ffcdd2;
+            color: #c62828;
+            font-weight: bold;
+        }
+
         /* Styles for printing */
         @media print {
             body {
@@ -321,7 +375,7 @@
                 border-radius: 0;
             }
             
-            .controls, .parameter-form, .month-selector, .loading, .error-message {
+            .controls, .parameter-form, .month-selector, .room-selector, .session-selector, .loading, .error-message {
                 display: none;
             }
             
@@ -411,34 +465,25 @@
                 background-color: white;
             }
 
-            .signer-section {
-                text-align: right;
-                padding: 5px 30px 0px;
-                font-size: 12px;
-                color: #555;
-            }
-            .signer-text {
-                margin-top: 30px;
-            }
-            .note-asterisk {
-                text-align: right;
-                padding: 0 30px 10px;
-                font-size: 10px;
-                color: #777;
-            }
-
             .footer {
                 padding: 5px 20px;
                 font-size: 10px;
                 background-color: white;
                 border-top: 1px solid #bbdefb;
             }
+            
+            td.out-of-range {
+                background-color: #ffcdd2 !important;
+                color: #c62828 !important;
+                font-weight: bold;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        
         <div class="hospital-info">
             <div class="hospital-name">
                 BỆNH VIỆN ĐA KHOA TỈNH HÀ GIANG
@@ -470,107 +515,57 @@
             <i class="fas fa-door-open"></i> Phòng: <span id="roomNumber">418</span>
         </div>
         
+        <!-- Session selector -->
+        <div class="session-selector">
+            <label><i class="fas fa-sun"></i> Chọn buổi:</label>
+            <div class="session-buttons">
+                <button id="sessionMorning" class="session-btn active">Buổi Sáng</button>
+                <button id="sessionAfternoon" class="session-btn">Buổi Chiều</button>
+            </div>
+        </div>
+        
+        <!-- Room selector -->
+        <div class="room-selector">
+            <label for="roomSelect"><i class="fas fa-door-open"></i> Chọn phòng:</label>
+            <select id="roomSelect">
+                <option value="">Đang tải danh sách phòng...</option>
+            </select>
+            <div class="status-indicator" id="statusIndicator" style="display: none;"></div>
+        </div>
+        
         <!-- Month selector -->
         <div class="month-selector">
             <div>
                 <label for="month1">Tháng 1:</label>
                 <select id="month1">
-                    <option value="1/2024">Tháng 1/2024</option>
-                    <option value="2/2024">Tháng 2/2024</option>
-                    <option value="3/2024">Tháng 3/2024</option>
-                    <option value="4/2024">Tháng 4/2024</option>
-                    <option value="5/2024">Tháng 5/2024</option>
-                    <option value="6/2024">Tháng 6/2024</option>
-                    <option value="7/2024">Tháng 7/2024</option>
-                    <option value="8/2024">Tháng 8/2024</option>
-                    <option value="9/2024" selected>Tháng 9/2024</option>
-                    <option value="10/2024">Tháng 10/2024</option>
-                    <option value="11/2024">Tháng 11/2024</option>
-                    <option value="12/2024">Tháng 12/2024</option>
+                    <!-- Options will be populated by JavaScript -->
                 </select>
             </div>
             <div>
                 <label for="month2">Tháng 2:</label>
                 <select id="month2">
-                    <option value="1/2024">Tháng 1/2024</option>
-                    <option value="2/2024">Tháng 2/2024</option>
-                    <option value="3/2024">Tháng 3/2024</option>
-                    <option value="4/2024">Tháng 4/2024</option>
-                    <option value="5/2024">Tháng 5/2024</option>
-                    <option value="6/2024">Tháng 6/2024</option>
-                    <option value="7/2024">Tháng 7/2024</option>
-                    <option value="8/2024">Tháng 8/2024</option>
-                    <option value="9/2024">Tháng 9/2024</option>
-                    <option value="10/2024" selected>Tháng 10/2024</option>
-                    <option value="11/2024">Tháng 11/2024</option>
-                    <option value="12/2024">Tháng 12/2024</option>
+                    <!-- Options will be populated by JavaScript -->
                 </select>
             </div>
             <div>
                 <label for="month3">Tháng 3:</label>
                 <select id="month3">
-                    <option value="1/2024">Tháng 1/2024</option>
-                    <option value="2/2024">Tháng 2/2024</option>
-                    <option value="3/2024">Tháng 3/2024</option>
-                    <option value="4/2024">Tháng 4/2024</option>
-                    <option value="5/2024">Tháng 5/2024</option>
-                    <option value="6/2024">Tháng 6/2024</option>
-                    <option value="7/2024">Tháng 7/2024</option>
-                    <option value="8/2024">Tháng 8/2024</option>
-                    <option value="9/2024">Tháng 9/2024</option>
-                    <option value="10/2024">Tháng 10/2024</option>
-                    <option value="11/2024" selected>Tháng 11/2024</option>
-                    <option value="12/2024">Tháng 12/2024</option>
+                    <!-- Options will be populated by JavaScript -->
                 </select>
             </div>
             <div>
                 <label for="month4">Tháng 4:</label>
                 <select id="month4">
-                    <option value="1/2024">Tháng 1/2024</option>
-                    <option value="2/2024">Tháng 2/2024</option>
-                    <option value="3/2024">Tháng 3/2024</option>
-                    <option value="4/2024">Tháng 4/2024</option>
-                    <option value="5/2024">Tháng 5/2024</option>
-                    <option value="6/2024">Tháng 6/2024</option>
-                    <option value="7/2024">Tháng 7/2024</option>
-                    <option value="8/2024">Tháng 8/2024</option>
-                    <option value="9/2024">Tháng 9/2024</option>
-                    <option value="10/2024">Tháng 10/2024</option>
-                    <option value="11/2024">Tháng 11/2024</option>
-                    <option value="12/2024" selected>Tháng 12/2024</option>
+                    <!-- Options will be populated by JavaScript -->
                 </select>
             </div>
         </div>
         
         <div id="tableContainer">
-            <table>
-                <thead>
-                    <tr>
-                        <th rowspan="2">Ngày/ Date</th>
-                        <th colspan="2" id="monthHeader1">Tháng/Month<br>9/2024</th>
-                        <th rowspan="2">Người TD</th>
-                        <th colspan="2" id="monthHeader2">Tháng/Month<br>10/2024</th>
-                        <th rowspan="2">Người TD</th>
-                        <th colspan="2" id="monthHeader3">Tháng/Month<br>11/2024</th>
-                        <th rowspan="2">Người TD</th>
-                        <th colspan="2" id="monthHeader4">Tháng/Month<br>12/2024</th>
-                        <th rowspan="2">Người TD</th>
-                    </tr>
-                    <tr>
-                        <th>Nhiệt độ (°C)</th>
-                        <th>Độ ẩm (%)</th>
-                        <th>Nhiệt độ (°C)</th>
-                        <th>Độ ẩm (%)</th>
-                        <th>Nhiệt độ (°C)</th>
-                        <th>Độ ẩm (%)</th>
-                        <th>Nhiệt độ (°C)</th>
-                        <th>Độ ẩm (%)</th>
-                    </tr>
-                </thead>
-                <tbody id="dataBody">
-                    <!-- Data will be populated here -->
-                </tbody>
-            </table>
+            <div class="loading">
+                <div class="spinner"></div>
+                <p style="margin-left: 10px;">Đang tải dữ liệu...</p>
+            </div>
         </div>
         
         <div class="note">
@@ -588,14 +583,6 @@
             <div class="form-title">TÙY CHỈNH THÔNG SỐ</div>
             <div class="form-grid">
                 <div class="input-group">
-                    <label for="inputPhong"><i class="fas fa-door-open"></i> Số phòng</label>
-                    <input type="text" id="inputPhong" placeholder="Số phòng" value="418">
-                </div>
-                <div class="input-group">
-                    <label for="inputNam"><i class="fas fa-calendar"></i> Năm</label>
-                    <input type="text" id="inputNam" placeholder="Năm" value="2024">
-                </div>
-                <div class="input-group">
                     <label for="inputNhietDo"><i class="fas fa-thermometer-half"></i> Nhiệt độ</label>
                     <input type="text" id="inputNhietDo" placeholder="Nhiệt độ (21°C-26°C)" value="21°C - 26°C">
                 </div>
@@ -604,19 +591,11 @@
                     <input type="text" id="inputDoAm" placeholder="Độ ẩm (40%-70%)" value="40% - 70%">
                 </div>
             </div>
-            
-            <div class="url-container" id="urlContainer">
-                <strong><i class="fas fa-link"></i> URL đã tạo:</strong>
-                <div id="generatedUrl"></div>
-            </div>
         </div>
         
         <div class="controls">
             <button class="btn btn-print" onclick="window.print()">
                 <i class="fas fa-print"></i> In trang
-            </button>
-            <button class="btn btn-generate" onclick="generateUrl()">
-                <i class="fas fa-link"></i> Tạo URL tùy chỉnh
             </button>
             <button class="btn btn-generate" onclick="fetchData()">
                 <i class="fas fa-sync"></i> Làm mới dữ liệu
@@ -628,32 +607,82 @@
         // Biến lưu trữ dữ liệu
         let allData = [];
         let organizedData = {};
+        let availableRooms = [];
         let lastFetchTime = 0;
         const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+        let currentSession = "Sáng"; // Mặc định là buổi sáng
 
-        // Hàm chuyển đổi tên tháng
-        function formatMonthYear(thang_nam) {
-            if (!thang_nam) return '';
-            const parts = thang_nam.split(' ');
-            if (parts.length < 4) return '';
-            const month = parts[1];
-            const year = parts[3];
-            return `${month}/${year}`;
+        // Hàm tạo danh sách tháng từ 1/2024 đến 12/2025
+        function generateMonthOptions() {
+            const months = [];
+            for (let year = 2024; year <= 2025; year++) {
+                for (let month = 1; month <= 12; month++) {
+                    months.push({
+                        value: `Tháng ${month} năm ${year}`,
+                        display: `${month}/${year}`,
+                        monthNum: month,
+                        year: year
+                    });
+                }
+            }
+            return months;
+        }
+
+        // Hàm khởi tạo dropdown tháng
+        function initializeMonthSelectors() {
+            const months = generateMonthOptions();
+            const selectors = ['month1', 'month2', 'month3', 'month4'];
+            
+            selectors.forEach((selectorId, index) => {
+                const select = document.getElementById(selectorId);
+                select.innerHTML = '';
+                
+                months.forEach(month => {
+                    const option = document.createElement('option');
+                    option.value = month.value;
+                    option.textContent = `Tháng ${month.display}`;
+                    select.appendChild(option);
+                });
+                
+                // Thiết lập giá trị mặc định (9/2024, 10/2024, 11/2024, 12/2024)
+                const defaultMonths = ['Tháng 9 năm 2024', 'Tháng 10 năm 2024', 'Tháng 11 năm 2024', 'Tháng 12 năm 2024'];
+                if (defaultMonths[index]) {
+                    select.value = defaultMonths[index];
+                }
+            });
+        }
+
+        // Hàm trích xuất thông tin phòng từ tên thiết bị
+        function extractRoomNumber(tenThietBi) {
+            const match = tenThietBi.match(/Phòng (\d+)/);
+            return match ? match[1] : null;
+        }
+
+        // Hàm trích xuất tên ngắn từ tên đầy đủ
+        function extractShortName(fullName) {
+            if (!fullName) return '';
+            
+            // Tách tên thành các phần
+            const nameParts = fullName.split(' ');
+            
+            // Lấy phần tử cuối cùng (tên)
+            return nameParts.length > 0 ? nameParts[nameParts.length - 1] : fullName;
         }
 
         // Hàm tổ chức dữ liệu
         function organizeData(roomData) {
             organizedData = {};
             
-            // Tạo cấu trúc dữ liệu theo ngày và tháng
             roomData.forEach(item => {
-                // Điều chỉnh múi giờ: UTC -> UTC+7 (Việt Nam)
+                // Chỉ lấy dữ liệu buổi đã chọn
+                if (item.buoi !== currentSession) return;
+                
+                // Chuyển đổi ngày từ UTC sang múi giờ Việt Nam
                 const dateObj = new Date(item.ngay_theo_doi);
                 const vnTime = new Date(dateObj.getTime() + 7 * 60 * 60 * 1000);
                 const day = vnTime.getDate();
                 
-                // Lấy tháng/năm
-                const monthYear = formatMonthYear(item.thang_nam);
+                const monthYear = item.thang_nam;
                 
                 if (!organizedData[day]) {
                     organizedData[day] = {};
@@ -671,18 +700,20 @@
                     humidity = parseFloat(item.do_am).toFixed(1).replace('.', ',');
                 }
                 
+                // Trích xuất tên ngắn
+                const shortName = extractShortName(item.nguoi_theo_doi);
+                
                 organizedData[day][monthYear] = {
                     temperature,
                     humidity,
-                    person: '' // không có thông tin người
+                    person: shortName
                 };
             });
         }
 
         // Hàm cập nhật bảng với dữ liệu đã chọn
         function updateTable() {
-            const tbody = document.getElementById('dataBody');
-            tbody.innerHTML = '';
+            const tableContainer = document.getElementById('tableContainer');
             
             // Lấy các tháng đã chọn
             const selectedMonths = [
@@ -691,156 +722,33 @@
                 document.getElementById('month3').value,
                 document.getElementById('month4').value
             ];
-            
-            // Cập nhật tiêu đề các tháng
-            document.getElementById('monthHeader1').innerHTML = `Tháng/Month<br>${selectedMonths[0]}`;
-            document.getElementById('monthHeader2').innerHTML = `Tháng/Month<br>${selectedMonths[1]}`;
-            document.getElementById('monthHeader3').innerHTML = `Tháng/Month<br>${selectedMonths[2]}`;
-            document.getElementById('monthHeader4').innerHTML = `Tháng/Month<br>${selectedMonths[3]}`;
-            
-            // Tạo hàng cho từng ngày (1-31)
-            for (let day = 1; day <= 31; day++) {
-                const row = document.createElement('tr');
-                
-                // Thêm cột ngày
-                const dateCell = document.createElement('td');
-                dateCell.textContent = day;
-                row.appendChild(dateCell);
-                
-                // Thêm dữ liệu cho từng tháng (4 tháng)
-                for (let i = 0; i < 4; i++) {
-                    const month = selectedMonths[i];
-                    
-                    // Kiểm tra xem có dữ liệu cho ngày và tháng này không
-                    const dataForDay = organizedData[day];
-                    const monthData = dataForDay && dataForDay[month];
-                    
-                    // Thêm ô nhiệt độ
-                    const tempCell = document.createElement('td');
-                    tempCell.textContent = monthData ? monthData.temperature : '';
-                    row.appendChild(tempCell);
-                    
-                    // Thêm ô độ ẩm
-                    const humidityCell = document.createElement('td');
-                    humidityCell.textContent = monthData ? monthData.humidity : '';
-                    row.appendChild(humidityCell);
-                    
-                    // Thêm ô người theo dõi (sau mỗi 2 cột)
-                    if (i < 3) {
-                        const personCell = document.createElement('td');
-                        personCell.textContent = monthData ? monthData.person : '';
-                        row.appendChild(personCell);
-                    }
-                }
-                
-                // Thêm ô người theo dõi cho tháng cuối
-                const lastMonth = selectedMonths[3];
-                const lastMonthData = organizedData[day] && organizedData[day][lastMonth];
-                const lastPersonCell = document.createElement('td');
-                lastPersonCell.textContent = lastMonthData ? lastMonthData.person : '';
-                row.appendChild(lastPersonCell);
-                
-                tbody.appendChild(row);
-            }
-            
-            // Thêm hàng người xem xét
-            const reviewerRow = document.createElement('tr');
-            reviewerRow.className = 'reviewer-row';
-            reviewerRow.innerHTML = `
-                <td style="text-align: left; font-weight: bold;">Người xem xét</td>
-                <td></td><td></td><td><span class="signature-line"></span></td>
-                <td></td><td></td><td><span class="signature-line"></span></td>
-                <td></td><td></td><td><span class="signature-line"></span></td>
-                <td></td><td></td><td><span class="signature-line"></span></td>
-            `;
-            tbody.appendChild(reviewerRow);
-        }
 
-        // Hàm lấy dữ liệu từ URL
-        async function fetchData() {
-            const phong = document.getElementById('inputPhong').value;
+            // Lấy ngưỡng nhiệt độ và độ ẩm
+            const tempRange = document.getElementById('inputNhietDo').value;
+            const humidityRange = document.getElementById('inputDoAm').value;
             
-            // Hiển thị loading
-            const tableContainer = document.getElementById('tableContainer');
-            tableContainer.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+            // Tách giá trị min/max từ chuỗi
+            const tempMatch = tempRange.match(/(\d+)\s*°C\s*-\s*(\d+)\s*°C/);
+            const humidityMatch = humidityRange.match(/(\d+)%\s*-\s*(\d+)%/);
             
-            // Xóa thông báo lỗi cũ
-            const errorElement = document.querySelector('.error-message');
-            if (errorElement) errorElement.remove();
-            
-            try {
-                // Kiểm tra cache
-                const currentTime = new Date().getTime();
-                if (currentTime - lastFetchTime < CACHE_DURATION && allData.length > 0) {
-                    // Sử dụng dữ liệu cache
-                    console.log('Sử dụng dữ liệu cache');
-                    processData(phong);
-                    return;
-                }
-                
-                const response = await fetch('https://script.google.com/macros/s/AKfycbz7fiaQeYt7brE8TBtqJ2xbXHq8H2qkHdn-VWy1HOQSbDv9o88o_3xyfG3blaKF-cqvvA/exec');
-                
-                if (!response.ok) {
-                    throw new Error('Không thể lấy dữ liệu từ URL');
-                }
-                
-                const data = await response.json();
-                allData = data || [];
-                lastFetchTime = new Date().getTime();
-                
-                // Xử lý dữ liệu
-                processData(phong);
-                
-            } catch (error) {
-                console.error('Lỗi khi lấy dữ liệu:', error);
-                
-                // Tạo thông báo lỗi
-                const errorElement = document.createElement('div');
-                errorElement.className = 'error-message';
-                errorElement.innerHTML = `
-                    <i class="fas fa-exclamation-triangle"></i> 
-                    Đã xảy ra lỗi khi lấy dữ liệu: ${error.message}
-                    <p>Vui lòng thử lại hoặc kiểm tra kết nối mạng</p>
-                `;
-                
-                tableContainer.innerHTML = '';
-                tableContainer.appendChild(errorElement);
-            }
-        }
-        
-        // Xử lý dữ liệu sau khi lấy về
-        function processData(phong) {
-            // Lọc dữ liệu cho phòng hiện tại
-            const roomData = allData.filter(item => 
-                item.ten_thiet_bi === `Phòng ${phong}`
-            );
-            
-            if (roomData.length === 0) {
-                const tableContainer = document.getElementById('tableContainer');
-                tableContainer.innerHTML = '<div class="error-message"><i class="fas fa-exclamation-circle"></i> Không tìm thấy dữ liệu cho phòng này</div>';
-                return;
-            }
-            
-            // Tổ chức dữ liệu
-            organizeData(roomData);
-            
-            // Cập nhật bảng
-            updateTable();
-            
-            // Hiển thị lại bảng
-            const tableContainer = document.getElementById('tableContainer');
-            tableContainer.innerHTML = `
+            const minTemp = tempMatch ? parseInt(tempMatch[1]) : 21;
+            const maxTemp = tempMatch ? parseInt(tempMatch[2]) : 26;
+            const minHumidity = humidityMatch ? parseInt(humidityMatch[1]) : 40;
+            const maxHumidity = humidityMatch ? parseInt(humidityMatch[2]) : 70;
+
+            // Tạo bảng HTML
+            let tableHTML = `
                 <table>
                     <thead>
                         <tr>
                             <th rowspan="2">Ngày/ Date</th>
-                            <th colspan="2" id="monthHeader1">Tháng/Month<br>9/2024</th>
+                            <th colspan="2">${selectedMonths[0]}</th>
                             <th rowspan="2">Người TD</th>
-                            <th colspan="2" id="monthHeader2">Tháng/Month<br>10/2024</th>
+                            <th colspan="2">${selectedMonths[1]}</th>
                             <th rowspan="2">Người TD</th>
-                            <th colspan="2" id="monthHeader3">Tháng/Month<br>11/2024</th>
+                            <th colspan="2">${selectedMonths[2]}</th>
                             <th rowspan="2">Người TD</th>
-                            <th colspan="2" id="monthHeader4">Tháng/Month<br>12/2024</th>
+                            <th colspan="2">${selectedMonths[3]}</th>
                             <th rowspan="2">Người TD</th>
                         </tr>
                         <tr>
@@ -854,80 +762,278 @@
                             <th>Độ ẩm (%)</th>
                         </tr>
                     </thead>
-                    <tbody id="dataBody">
-                        ${document.getElementById('dataBody').innerHTML}
-                    </tbody>
-                </table>
+                    <tbody>
             `;
+            
+            // Tạo hàng cho từng ngày (1-31)
+            for (let day = 1; day <= 31; day++) {
+                tableHTML += '<tr>';
+                tableHTML += `<td>${day}</td>`;
+                
+                // Thêm dữ liệu cho từng tháng (4 tháng)
+                for (let i = 0; i < 4; i++) {
+                    const month = selectedMonths[i];
+                    const monthData = organizedData[day] && organizedData[day][month];
+                    
+                    // Kiểm tra và định dạng nhiệt độ
+                    let tempCell = monthData ? monthData.temperature : '';
+                    let tempClass = '';
+                    if (monthData && monthData.temperature) {
+                        const tempValue = parseFloat(monthData.temperature.replace(',', '.'));
+                        if (tempValue < minTemp || tempValue > maxTemp) {
+                            tempClass = 'out-of-range';
+                        }
+                    }
+                    
+                    // Kiểm tra và định dạng độ ẩm
+                    let humidityCell = monthData ? monthData.humidity : '';
+                    let humidityClass = '';
+                    if (monthData && monthData.humidity) {
+                        const humidityValue = parseFloat(monthData.humidity.replace(',', '.'));
+                        if (humidityValue < minHumidity || humidityValue > maxHumidity) {
+                            humidityClass = 'out-of-range';
+                        }
+                    }
+                    
+                    // Thêm ô nhiệt độ
+                    tableHTML += `<td class="${tempClass}">${tempCell}</td>`;
+                    
+                    // Thêm ô độ ẩm
+                    tableHTML += `<td class="${humidityClass}">${humidityCell}</td>`;
+                    
+                    // Thêm ô người theo dõi (chỉ hiển thị tên ngắn)
+                    tableHTML += `<td>${monthData ? monthData.person : ''}</td>`;
+                }
+                
+                tableHTML += '</tr>';
+            }
+            
+            // Thêm hàng người xem xét
+            tableHTML += `
+                <tr class="reviewer-row">
+                    <td style="text-align: left; font-weight: bold;">Người xem xét</td>
+                    <td></td><td></td><td></td>
+                    <td></td><td></td><td></td>
+                    <td></td><td></td><td></td>
+                    <td></td><td></td><td></td>
+                </tr>
+            `;
+            
+            tableHTML += '</tbody></table>';
+            tableContainer.innerHTML = tableHTML;
         }
 
-        // Hàm tạo URL tùy chỉnh
-        function generateUrl() {
-            const phong = document.getElementById('inputPhong').value;
-            const nam = document.getElementById('inputNam').value;
-            const nhietDo = document.getElementById('inputNhietDo').value;
-            const doAm = document.getElementById('inputDoAm').value;
+        // Hàm cập nhật thông tin phòng và năm
+        function updateDisplayInfo() {
+            const selectedRoom = document.getElementById('roomSelect').value;
+            const roomNumber = extractRoomNumber(selectedRoom);
             
-            // Cập nhật thông tin trên trang
-            document.getElementById('roomNumber').textContent = phong;
-            document.getElementById('year').textContent = 'Năm: ' + nam;
-            document.getElementById('tempRange').textContent = nhietDo;
-            document.getElementById('humidityRange').textContent = doAm;
+            if (roomNumber) {
+                document.getElementById('roomNumber').textContent = roomNumber;
+            }
+
+            // Lấy năm từ tháng đầu tiên được chọn
+            const firstMonth = document.getElementById('month1').value;
+            const yearMatch = firstMonth.match(/năm (\d{4})/);
+            if (yearMatch) {
+                document.getElementById('year').textContent = `Năm: ${yearMatch[1]}`;
+            }
+
+            // Cập nhật thông số nhiệt độ và độ ẩm
+            document.getElementById('tempRange').textContent = document.getElementById('inputNhietDo').value;
+            document.getElementById('humidityRange').textContent = document.getElementById('inputDoAm').value;
+        }
+
+        // Hàm lấy dữ liệu từ URL
+        async function fetchData() {
+            const statusIndicator = document.getElementById('statusIndicator');
+            const tableContainer = document.getElementById('tableContainer');
             
-            // Tạo URL
-            const baseUrl = window.location.href.split('?')[0];
-            const newUrl = `${baseUrl}?phong=${encodeURIComponent(phong)}&nam=${encodeURIComponent(nam)}&nhietDo=${encodeURIComponent(nhietDo)}&doAm=${encodeURIComponent(doAm)}`;
+            // Hiển thị loading
+            tableContainer.innerHTML = '<div class="loading"><div class="spinner"></div><p style="margin-left: 10px;">Đang tải dữ liệu...</p></div>';
+            statusIndicator.style.display = 'none';
             
-            document.getElementById('generatedUrl').innerHTML = `
-                <a href="${newUrl}" target="_blank">${newUrl}</a>
-                <button onclick="copyToClipboard('${newUrl}')"><i class="fas fa-copy"></i> Sao chép URL</button>
-            `;
+            try {
+                // Kiểm tra cache
+                const currentTime = new Date().getTime();
+                if (currentTime - lastFetchTime < CACHE_DURATION && allData.length > 0) {
+                    processData();
+                    return;
+                }
+                
+                // Sử dụng URL script mới
+                const response = await fetch('https://script.google.com/macros/s/AKfycbw9tQT6wEOgNb-VndUkhIE5eW4czj9_uyaQ1PNCTLLWSTwHwNOb_W1ZZJ5KbQX8HaEFmw/exec');
+                
+                if (!response.ok) {
+                    throw new Error('Không thể lấy dữ liệu từ URL');
+                }
+                
+                const data = await response.json();
+                allData = data || [];
+                lastFetchTime = new Date().getTime();
+                
+                // Xử lý dữ liệu
+                processData();
+                
+                // Hiển thị trạng thái thành công
+                statusIndicator.textContent = `Đã tải ${allData.length} bản ghi lúc ${new Date().toLocaleTimeString('vi-VN')}`;
+                statusIndicator.className = 'status-indicator status-success';
+                statusIndicator.style.display = 'inline-block';
+                
+            } catch (error) {
+                console.error('Lỗi khi lấy dữ liệu:', error);
+                
+                tableContainer.innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        Đã xảy ra lỗi khi lấy dữ liệu: ${error.message}
+                        <p>Vui lòng thử lại hoặc kiểm tra kết nối mạng</p>
+                    </div>
+                `;
+                
+                statusIndicator.textContent = `Lỗi: ${error.message}`;
+                statusIndicator.className = 'status-indicator status-error';
+                statusIndicator.style.display = 'inline-block';
+            }
         }
         
-        // Hàm sao chép vào clipboard
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                alert('Đã sao chép URL vào clipboard!');
-            });
-        }
-        
-        // Khởi tạo khi trang được tải
-        document.addEventListener('DOMContentLoaded', function() {
-            // Thiết lập sự kiện cho các dropdown tháng
-            document.querySelectorAll('.month-selector select').forEach(select => {
-                select.addEventListener('change', updateTable);
+        // Xử lý dữ liệu sau khi lấy về
+        function processData() {
+            // Lấy danh sách phòng duy nhất
+            const roomSet = new Set();
+            allData.forEach(item => {
+                if (item.ten_thiet_bi && item.ten_thiet_bi.includes('Phòng')) {
+                    roomSet.add(item.ten_thiet_bi);
+                }
             });
             
-            // Thiết lập sự kiện cho input phòng
-            document.getElementById('inputPhong').addEventListener('change', function() {
-                document.getElementById('roomNumber').textContent = this.value;
-                fetchData();
+            availableRooms = Array.from(roomSet).sort();
+            
+            // Cập nhật dropdown phòng
+            const roomSelect = document.getElementById('roomSelect');
+            roomSelect.innerHTML = '<option value="">-- Chọn phòng --</option>';
+            
+            availableRooms.forEach(room => {
+                const option = document.createElement('option');
+                option.value = room;
+                option.textContent = room;
+                roomSelect.appendChild(option);
+            });
+            
+            // Thiết lập phòng mặc định (Phòng 418 nếu có)
+            const defaultRoom = availableRooms.find(room => room.includes('418'));
+            if (defaultRoom) {
+                roomSelect.value = defaultRoom;
+            } else if (availableRooms.length > 0) {
+                roomSelect.value = availableRooms[0];
+            }
+            
+            // Lọc và hiển thị dữ liệu
+            filterAndDisplayData();
+        }
+
+        // Hàm lọc và hiển thị dữ liệu
+        function filterAndDisplayData() {
+            const selectedRoom = document.getElementById('roomSelect').value;
+            
+            if (!selectedRoom) {
+                document.getElementById('tableContainer').innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Vui lòng chọn phòng để xem dữ liệu
+                    </div>
+                `;
+                return;
+            }
+            
+            // Lọc dữ liệu theo phòng đã chọn
+            const roomData = allData.filter(item => item.ten_thiet_bi === selectedRoom);
+            
+            if (roomData.length === 0) {
+                document.getElementById('tableContainer').innerHTML = `
+                    <div class="error-message">
+                        <i class="fas fa-database"></i>
+                        Không tìm thấy dữ liệu cho phòng đã chọn
+                    </div>
+                `;
+                return;
+            }
+            
+            // Tổ chức dữ liệu
+            organizeData(roomData);
+            
+            // Cập nhật thông tin hiển thị
+            updateDisplayInfo();
+            
+            // Tạo bảng
+            updateTable();
+        }
+
+        // Hàm chọn buổi
+        function selectSession(session) {
+            currentSession = session;
+            
+            // Cập nhật nút active
+            document.getElementById('sessionMorning').classList.remove('active');
+            document.getElementById('sessionAfternoon').classList.remove('active');
+            
+            if (session === "Sáng") {
+                document.getElementById('sessionMorning').classList.add('active');
+            } else {
+                document.getElementById('sessionAfternoon').classList.add('active');
+            }
+            
+            // Cập nhật bảng nếu đã chọn phòng
+            if (document.getElementById('roomSelect').value) {
+                filterAndDisplayData();
+            }
+        }
+
+        // Hàm khởi tạo ứng dụng
+        function initializeApp() {
+            // Khởi tạo dropdown tháng
+            initializeMonthSelectors();
+            
+            // Lắng nghe sự kiện thay đổi phòng
+            document.getElementById('roomSelect').addEventListener('change', () => {
+                filterAndDisplayData();
+            });
+            
+            // Lắng nghe sự kiện thay đổi tháng
+            const monthSelectors = ['month1', 'month2', 'month3', 'month4'];
+            monthSelectors.forEach(id => {
+                document.getElementById(id).addEventListener('change', () => {
+                    updateDisplayInfo();
+                    updateTable();
+                });
+            });
+            
+            // Lắng nghe sự kiện thay đổi thông số
+            document.getElementById('inputNhietDo').addEventListener('change', function() {
+                document.getElementById('tempRange').textContent = this.value;
+                updateTable();
+            });
+            
+            document.getElementById('inputDoAm').addEventListener('change', function() {
+                document.getElementById('humidityRange').textContent = this.value;
+                updateTable();
+            });
+            
+            // Lắng nghe sự kiện chọn buổi
+            document.getElementById('sessionMorning').addEventListener('click', () => {
+                selectSession("Sáng");
+            });
+            
+            document.getElementById('sessionAfternoon').addEventListener('click', () => {
+                selectSession("Chiều");
             });
             
             // Tải dữ liệu ban đầu
             fetchData();
-            
-            // Kiểm tra tham số URL khi tải trang
-            const urlParams = new URLSearchParams(window.location.search);
-            
-            if (urlParams.has('phong')) {
-                const phong = urlParams.get('phong');
-                document.getElementById('roomNumber').textContent = phong;
-                document.getElementById('inputPhong').value = phong;
-            }
-            if (urlParams.has('nam')) {
-                document.getElementById('year').textContent = 'Năm: ' + urlParams.get('nam');
-                document.getElementById('inputNam').value = urlParams.get('nam');
-            }
-            if (urlParams.has('nhietDo')) {
-                document.getElementById('tempRange').textContent = urlParams.get('nhietDo');
-                document.getElementById('inputNhietDo').value = urlParams.get('nhietDo');
-            }
-            if (urlParams.has('doAm')) {
-                document.getElementById('humidityRange').textContent = urlParams.get('doAm');
-                document.getElementById('inputDoAm').value = urlParams.get('doAm');
-            }
-        });
+        }
+
+        // Khởi chạy ứng dụng khi trang tải xong
+        document.addEventListener('DOMContentLoaded', initializeApp);
     </script>
 </body>
 </html>
